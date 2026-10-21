@@ -10,12 +10,23 @@ class OutOfStock(Exception):
 
 @dataclass(unsafe_hash=True)
 class OrderLine:
+    """
+    OrderLine is a value object.
+    
+    One of the nice things that dataclasses (or namedtuples) give us is value equality, which is the fancy way of
+    saying, “Two lines with the same orderid, sku, and qty are equal.”
+    """
     orderid: str
     sku: str
     qty: int
 
 
 class Batch:
+    """
+    We use the term entity to describe a domain object that has a long-lived identity.
+    Entities, unlike values, have identity equality. We can change their values, and
+    they are still recognizably the same thing.
+    """
     def __init__(self, ref: str, sku: str, qty: int, eta: Optional[date]):
         self.reference: str = ref
         self.sku: str = sku
@@ -27,11 +38,21 @@ class Batch:
         return f"<Batch {self.reference}>"
 
     def __eq__(self, other):
+        """ We usually make this explicit in code by implementing equality operators on entities: """
         if not isinstance(other, Batch):
             return False
         return other.reference == self.reference
 
     def __hash__(self):
+        """
+        For both entity and value objects, it’s also worth thinking through how hash will work. It’s the magic method
+        Python uses to control the behavior of objects when you add them to sets or use them as dict keys;
+
+        For entities, the simplest option is to say that the hash is None, meaning that the object is not hashable and
+        cannot, for example, be used in a set. If for some reason you decide you really do want to use set or dict
+        operations with entities, the hash should be based on the attribute(s), such as .reference, that define the
+        entity’s unique identity over time.
+        """
         return hash(self.reference)
 
     def __gt__(self, other):

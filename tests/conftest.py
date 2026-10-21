@@ -1,3 +1,7 @@
+"""
+You can define common dependencies for your tests as “fixtures” and pytest will inject them to the tests that need
+them by looking at their function arguments. In this case, it’s a SQLAlchemy database session.
+"""
 import pytest
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker, clear_mappers
