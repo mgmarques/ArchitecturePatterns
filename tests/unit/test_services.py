@@ -71,3 +71,32 @@ def test_commits():
 
     services.allocate(line, repo, session)       # 2
     assert session.committed is True
+
+def test_deallocation():
+    line1 = model.OrderLine("o1", "COMPLICATED-LAMP", 10)
+    line2 = model.OrderLine("o2", "COMPLICATED-LAMP", 15)
+    batch = model.Batch("b1", "COMPLICATED-LAMP", 100, eta=None)
+    repo = FakeRepository([batch])      # 1
+
+    services.allocate(line1, repo, FakeSession())       # 2
+    services.allocate(line2, repo, FakeSession())       # 2
+    assert batch.available_quantity == 75
+
+    services.deallocate(line2, repo, FakeSession())
+    assert batch.available_quantity == 90
+
+
+def test_deallocation_one():
+    line1 = model.OrderLine("o1", "COMPLICATED-LAMP", 25)
+    line2 = model.OrderLine("o2", "COMPLICATED-LAMP", 25)
+    batch = model.Batch("b1", "COMPLICATED-LAMP", 100, eta=None)
+    repo = FakeRepository([batch])      # 1
+
+    services.allocate(line1, repo, FakeSession())       # 2
+    services.allocate(line2, repo, FakeSession())       # 2
+    assert batch.available_quantity == 50
+    assert len([b._allocations for b in repo.list()][0]) == 2
+
+    services.deallocate_one(batch, FakeSession())
+    assert batch.available_quantity == 75
+    assert len([b._allocations for b in repo.list()][0]) == 1

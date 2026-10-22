@@ -8,7 +8,7 @@ we see fit. As long as we can still deliver the same use cases, we can experimen
 rewrite a load of tests.
 """
 from allocation.domain import model
-from allocation.domain.model import OrderLine
+from allocation.domain.model import OrderLine, Batch
 from allocation.adapters.repository import AbstractRepository
 
 
@@ -44,3 +44,20 @@ def allocate(line: OrderLine, repo: AbstractRepository, session) -> str:
     session.commit()
 
     return batchref
+
+def deallocate(line: OrderLine, repo: AbstractRepository, session):
+    batch = next((b for b in repo.list() if line in b._allocations), None)
+    if batch:
+        batch.deallocate(line)
+        session.commit()
+    else:
+        # Optional
+        pass
+
+def deallocate_one(batch: Batch, session):
+    if batch:
+        batch.deallocate_one()
+        session.commit()
+    else:
+        # Optional
+        pass
