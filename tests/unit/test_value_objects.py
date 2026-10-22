@@ -1,5 +1,5 @@
 import pytest
-from allocation.domain.value_objects import Money, Name, Line
+from src.allocation.domain.value_objects import Money, Name, Line
 
 fiver = Money('gbp', 5)
 tenner = Money('gbp', 10)

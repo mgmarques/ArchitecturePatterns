@@ -17,15 +17,19 @@ services:
       - REDIS_HOST=redis
       - EMAIL_HOST=mailhog
       - PYTHONDONTWRITEBYTECODE=1
+      - PYTHONPATH=/
     volumes:
       - ./src:/src
       - ./tests:/tests
+    working_dir: /src
     entrypoint:
       - python
-      - /src/allocation/entrypoints/redis_eventconsumer.py
+      - -m
+      - allocation.entrypoints.redis_eventconsumer
 
   api:
     image: allocation-image
+    restart: always
     depends_on:
       - redis_pubsub
       - mailhog
@@ -36,22 +40,26 @@ services:
       - REDIS_HOST=redis
       - EMAIL_HOST=mailhog
       - PYTHONDONTWRITEBYTECODE=1
-      - FLASK_APP=allocation/entrypoints/flask_app.py
+      - FLASK_APP=src.allocation.entrypoints.flask_app
       - FLASK_DEBUG=1
       - PYTHONUNBUFFERED=1
+      - PYTHONPATH=/
     volumes:
       - ./src:/src
       - ./tests:/tests
+    working_dir: /src
     entrypoint:
       - flask
       - run
       - --host=0.0.0.0
       - --port=80
+      - --reload
     ports:
       - "5005:80"
 
   postgres:
-    image: postgres:9.6
+    image: postgres:11
+    platform: linux/amd64
     environment:
       - POSTGRES_USER=allocation
       - POSTGRES_PASSWORD=abc123
@@ -64,7 +72,7 @@ services:
       - "63791:6379"
 
   mailhog:
-    image: mailhog/mailhog
+    image: axllent/mailpit
     ports:
       - "11025:1025"
       - "18025:8025"

@@ -1,24 +1,27 @@
 """
-In this case we have to:
+Our goal is to isolate the clever part of our system, and to be able to test it thoroughly without needing to set up a
+real filesystem. We’ll create a “core” of code that has no dependencies on external state and then see how it responds
+when we give it input from the outside world (Functional Core, Imperative Shell, or FCIS).
+
+To do that, start by splitting the code to separate the stateful parts from the logic, our top-level function will
+contain almost no logic at all.
+
+in this exercise we have to:
 - If a file exists in the source but not in the destination, copy the file over.
 - If a file exists in the source, but it has a different name than in the destination,
   rename the destination file to match.
 - If a file exists in the destination but not in the source, remove it.
 
-Our goal is to isolate the clever part of our system, and to be able to test it thoroughly without needing to set up a
-real filesystem. We’ll create a “core” of code that has no dependencies on external state and then see how it responds
-when we give it input from the outside world (Functional Core, Imperative Shell, or FCIS).
-
-To do that, start by splitting the code to separate the stateful parts from the logic.
-
-And our top-level function will contain almost no logic at all.
-
-In that case here it’s just an imperative series of steps: gather inputs, call our logic, apply outputs
+In that case here our top-level function it’s just an imperative series of steps:
+    1. gather inputs
+    2. call our logic
+    3. apply outputs
 """
 import hashlib
 import os
 import shutil
 from pathlib import Path
+from typing import Any, Generator
 
 
 def sync(source, dest):
@@ -49,10 +52,8 @@ def sync(source, dest):
 BLOCKSIZE = 65536
 
 
-def hash_file(path) -> str:
-    """
-    Generate a SHA-1 hash from a file to inspect the content of files.
-    """
+def hash_file(path) -> Any:
+    """ Generate a SHA-1 hash from a file to inspect the content of files. """
     hasher = hashlib.sha1()
     with path.open("rb") as file:
         buf = file.read(BLOCKSIZE)
@@ -62,7 +63,7 @@ def hash_file(path) -> str:
     return hasher.hexdigest()
 
 
-def read_paths_and_hashes(root):
+def read_paths_and_hashes(root) ->  dict[Any, Any]:
     """ Walk the root folder and build a dict of filenames and their hashes """
     hashes = {}
     for folder, _, files in os.walk(root):
@@ -71,7 +72,8 @@ def read_paths_and_hashes(root):
     return hashes
 
 
-def determine_actions(source_hashes, dest_hashes, source_folder, dest_folder):
+def determine_actions(source_hashes, dest_hashes, source_folder, dest_folder
+                      ) -> Generator[tuple[str, Any, Any] | tuple[str, Any], Any, None]:
     """
     # A function that just does business logic:
     We’re going to separate what we want to do from how to do it. We’re going to make our program output a list of

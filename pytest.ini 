@@ -1,0 +1,9 @@
+[pytest]
+pythonpath = src
+env =
+    API_HOST=localhost
+    REDIS_HOST=localhost
+    DB_HOST=localhost
+addopts = --tb=short
+filterwarnings =
+    ignore::DeprecationWarning

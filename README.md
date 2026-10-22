@@ -31,6 +31,9 @@ make up
 pytest tests/unit
 pytest tests/integration
 pytest tests/e2e
+
+# run all tests
+PYTHONPATH=src pytest
 ```
 
 ### Tests with dockers images
